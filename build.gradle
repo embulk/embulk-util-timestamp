@@ -10,12 +10,21 @@ description "Timestamp parser for Embulk and Embulk plugins"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations {
+    javadocOnly { transitive false }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
     implementation "org.embulk:embulk-util-rubytime:0.2.0"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.3.1"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.3.1"
+
+    javadocOnly "joda-time:joda-time:2.10.2"
 }
 
 tasks.withType(JavaCompile) {
@@ -26,10 +35,12 @@ tasks.withType(JavaCompile) {
 javadoc {
     title = "${project.name} v${project.version}"
     options {
+        classpath += configurations.javadocOnly
         locale = "en_US"
         encoding = "UTF-8"
         overview = "src/main/html/overview.html"
         links "https://docs.oracle.com/javase/8/docs/api/"
+        links "https://www.joda.org/joda-time/apidocs/"
     }
 }
 
