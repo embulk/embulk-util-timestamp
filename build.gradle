@@ -95,9 +95,6 @@ uploadArchives {
                     throw new GradleException("Set sonatype.userName and sonatype.password to upload to Maven Central.")
                 }
 
-                // Do not assign SNAPSHOTs a unique version comprised of the timestamp and build number.
-                uniqueVersion = project.findProperty("mavenUniqueVersion") ?: false
-
                 repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                     authentication(userName: project.getProperty("sonatype.userName"),
                                    password: project.getProperty("sonatype.password"))
