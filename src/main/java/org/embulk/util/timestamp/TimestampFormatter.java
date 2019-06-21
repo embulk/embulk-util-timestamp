@@ -17,8 +17,11 @@
 package org.embulk.util.timestamp;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -133,22 +136,38 @@ public abstract class TimestampFormatter {
         }
 
         /**
-         * Sets the default {@link java.time.ZoneId} parsed from a {@link java.lang.String}.
+         * Sets the default timezone parsed from a {@link java.lang.String}.
          *
-         * <p>Setting {@link java.time.ZoneId} is available only for a legacy non-prefixed matching pattern.
+         * <p>Only for a legacy non-prefixed matching pattern, the given {@link java.lang.String}
+         * is parsed into {@link java.time.ZoneId}, which accepts a geographical region such as
+         * {@code "America/Los_Angeles"} and {@code "Asia/Tokyo"}. Remember that timezones based
+         * on geographical regions have problems, especially around daylight saving time, as
+         * documented in {@link org.embulk.util.timestamp.LegacyDateTimeZones}.
          *
-         * @param defaultZoneIdString  a {@link java.lang.String} to be parsed into the default {@link java.time.ZoneId}
+         * <p>If the pattern is prefix Ruby-style or Java-style, the given {@link java.lang.String}
+         * is parsed into {@link java.time.ZoneOffset}, which is only a fixed offset. The parse is
+         * performed with {@link java.time.ZoneOffset#of(String)}.
+         *
+         * @param defaultZoneString  a {@link java.lang.String} to be parsed into the default timezone
          * @return this
          * @throws java.lang.IllegalArgumentException  if called for a prefixed matching pattern
          */
-        public Builder setDefaultZoneIdFromString(final String defaultZoneIdString) {
-            return this.setDefaultZoneId(LegacyDateTimeZones.toZoneId(defaultZoneIdString));
+        public Builder setDefaultZoneFromString(final String defaultZoneString) {
+            if (this.prefix != Prefix.NONE) {
+                return this.setDefaultZoneOffset(ZoneOffset.of(defaultZoneString));
+            }
+            return this.setDefaultZoneId(LegacyDateTimeZones.toZoneId(defaultZoneString));
         }
 
         /**
          * Sets the default date.
          *
          * <p>Setting a default date is available only for a legacy non-prefixed matching pattern.
+         * If it is called for a prefixed Ruby-style or Java-style pattern, with a date which is
+         * not 1970-01-01, it throws {@link java.lang.IllegalArgumentException}.
+         *
+         * <p>Calling it for a prefixed pattern is intentionally accepted with 1970-01-01 for
+         * easier migration with compatibility from Embulk's own {@code TimestampParser}.
          *
          * @param defaultYear  the default year
          * @param defaultMonthOfYear  the default month of a year (1-12)
@@ -158,11 +177,34 @@ public abstract class TimestampFormatter {
          */
         public Builder setDefaultDate(final int defaultYear, final int defaultMonthOfYear, final int defaultDayOfMonth) {
             if (this.prefix != Prefix.NONE) {
-                throw new IllegalArgumentException("Pattern must be legacy non-prefixed to set default date.");
+                if (defaultYear != 1970 || defaultMonthOfYear != 1 || defaultDayOfMonth != 1) {
+                    throw new IllegalArgumentException("Pattern must be legacy non-prefixed to set default date.");
+                }
+            } else {
+                this.defaultYear = defaultYear;
+                this.defaultMonthOfYear = defaultMonthOfYear;
+                this.defaultDayOfMonth = defaultDayOfMonth;
             }
-            this.defaultYear = defaultYear;
-            this.defaultMonthOfYear = defaultMonthOfYear;
-            this.defaultDayOfMonth = defaultDayOfMonth;
+            return this;
+        }
+
+        /**
+         * Sets the default date parsed from a {@link java.lang.String}.
+         *
+         * <p>Setting a default date is available only for a legacy non-prefixed matching pattern.
+         * If it is called for a prefixed Ruby-style or Java-style pattern, with a date which is
+         * not 1970-01-01, it throws {@link java.lang.IllegalArgumentException}.
+         *
+         * <p>Calling it for a prefixed pattern is intentionally accepted with 1970-01-01 for
+         * easier migration with compatibility from Embulk's own {@code TimestampParser}.
+         *
+         * @param defaultDateString  the default date in String ({@code "YYYY-MM-DD"})
+         * @return this
+         * @throws java.lang.IllegalArgumentException  if called for a prefixed matching pattern
+         */
+        public Builder setDefaultDateFromString(final String defaultDateString) {
+            final LocalDate date = LocalDate.from(DATE_FORMATTER.parse(defaultDateString));
+            this.setDefaultDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
             return this;
         }
 
@@ -282,4 +324,6 @@ public abstract class TimestampFormatter {
      * @throws java.time.format.DateTimeParseException  if unable to parse the requested result
      */
     public abstract Instant parse(final String text);
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("u-M-d", Locale.ROOT);
 }
