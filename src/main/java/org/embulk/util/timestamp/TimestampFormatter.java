@@ -25,20 +25,26 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Formatter for parsing a date-time text.
+ * Formatter for parsing a date-time text into {@link java.time.Instant}, and for formatting {@link java.time.Instant}.
  *
- * <p>The formatter is built with a predefined matching pattern, and used for
- * parsing date-time strings. Patterns include the Ruby style, the Java style,
- * and the legacy Embulk style ("legacy non-prefixed").
+ * <p>The formatter is built with a predefined format pattern, and used for parsing
+ * a date-time {@link java.lang.String}, and formatting {@link java.time.Instant}.
+ * Patterns include the Ruby style, the Java style, and the legacy Embulk style
+ * ("legacy non-prefixed").
  *
  * <p>The Ruby style works like Ruby's
  * <a href="https://docs.ruby-lang.org/en/2.6.0/Time.html#method-c-strptime">
- * {@code Time.strptime}</a>. A Ruby-style pattern follows a prefix
+ * {@code Time.strptime}</a> and
+ * <a href="https://docs.ruby-lang.org/en/2.6.0/Time.html#method-i-strftime">
+ * {@code Time#strftime}</a>. A Ruby-style pattern follows a prefix
  * {@code "ruby:"}, or built with {@link #builderWithRuby(String)}. For example:
  *
  * <pre>{@code TimestampFormatter formatter1 = TimestampFormatter.builder("ruby:%Y-%m-%d %H:%M:%S %Z").build();
  * Instant instant1 = formatter1.parse("2019-02-28 12:34:56 +09:00");
  * System.out.println(instant1);  // => "2019-02-28T03:34:56Z"
+ *
+ * String formatted1 = formatter1.format(Instant.ofEpochSecond(1009110896));
+ * System.out.println(formatted1);  // => "2017-12-23 12:34:56 UTC"
  *
  * // Same as formatter1 without "ruby:".
  * TimestampFormatter formatter2 = TimestampFormatter.builderWithRuby("%Y-%m-%d %H:%M:%S %Z").build();}</pre>
@@ -51,6 +57,9 @@ import java.util.Optional;
  * Instant instant3 = formatter3.parse("2019-02-28 12:34:56 +09:00");
  * System.out.println(instant3);  // => "2019-02-28T03:34:56Z"
  *
+ * String formatted3 = formatter3.format(Instant.ofEpochSecond(1009110896));
+ * System.out.println(formatted3);  // => "2017-12-23 12:34:56 UTC"
+ *
  * // Same as formatter3 without "java:".
  * TimestampFormatter formatter4 = TimestampFormatter.builderWithJava("uuuu-MM-dd HH:mm:ss XXXXX").build();}</pre>
  *
@@ -62,7 +71,10 @@ import java.util.Optional;
  *
  * <pre>{@code TimestampFormatter formatter5 = TimestampFormatter.builder("%Y-%m-%d %H:%M:%S %Z", true).build();
  * Instant instant5 = formatter5.parse("2019-02-28 12:34:56 +09:00");
- * System.out.println(instant5);  // => "2019-02-28T03:34:56Z"}</pre>
+ * System.out.println(instant5);  // => "2019-02-28T03:34:56Z"
+ *
+ * String formatted5 = formatter5.format(Instant.ofEpochSecond(1009110896));
+ * System.out.println(formatted5);  // => "2017-12-23 12:34:56 UTC"}</pre>
  */
 public abstract class TimestampFormatter {
     TimestampFormatter() {}
@@ -313,6 +325,17 @@ public abstract class TimestampFormatter {
     public static Builder builderWithRuby(final String pattern) {
         return new Builder(Prefix.RUBY, pattern, false);
     }
+
+    /**
+     * Formats {@link java.time.Instant} with the default timezone of this formatter into {@link java.lang.String}.
+     *
+     * @param instant  the {@link java.time.Instant} object to format, not null
+     * @return the formatted string, not null
+     *
+     * @throws java.lang.NullPointerException  if {@code instant} is null
+     * @throws java.time.DateTimeException  if an error occurs during formatting
+     */
+    public abstract String format(final Instant instant);
 
     /**
      * Parses a date-time text into {@link java.time.Instant}.

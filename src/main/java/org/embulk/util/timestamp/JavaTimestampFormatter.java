@@ -28,6 +28,15 @@ class JavaTimestampFormatter extends TimestampFormatter {
     }
 
     @Override
+    public final String format(final Instant instant) {
+        if (instant == null) {
+            throw new NullPointerException("instant is null.");
+        }
+
+        return this.formatter.format(instant.atOffset(this.defaultZoneOffset));
+    }
+
+    @Override
     public final Instant parse(final String text) {
         if (text == null) {
             throw new DateTimeParseException("text is null.", text, 0, new NullPointerException());
