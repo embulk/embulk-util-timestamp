@@ -1,16 +1,18 @@
 apply plugin: "java"
-apply plugin: "maven"
+apply plugin: "maven-publish"
 apply plugin: "signing"
 
 group = "org.embulk"
 archivesBaseName = "${project.name}"
-version = "0.1.1-SNAPSHOT"
-description "Timestamp parser for Embulk and Embulk plugins"
+version = "0.2.0-SNAPSHOT"
+description "Timestamp parser and formatter for Embulk and Embulk plugins"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 configurations {
+    compileClasspath.resolutionStrategy.activateDependencyLocking()
+    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
     javadocOnly { transitive false }
 }
 
@@ -19,10 +21,10 @@ repositories {
 }
 
 dependencies {
-    implementation "org.embulk:embulk-util-rubytime:0.2.0"
+    implementation "org.embulk:embulk-util-rubytime:0.3.0"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.3.1"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.3.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.1"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.1"
 
     javadocOnly "joda-time:joda-time:2.10.2"
 }
@@ -30,6 +32,11 @@ dependencies {
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     options.encoding = "UTF-8"
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 javadoc {
@@ -57,101 +64,75 @@ jar {
     from rootProject.file("NOTICE")
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = "sources"
-    from sourceSets.main.allSource
+sourcesJar {
     from rootProject.file("LICENSE")
     from rootProject.file("NOTICE")
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = "javadoc"
-    from javadoc.destinationDir
+javadocJar {
     from rootProject.file("LICENSE")
     from rootProject.file("NOTICE")
 }
 
-artifacts {
-    archives sourcesJar, javadocJar
-}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = "${project.group}"
+            artifactId = "${project.name}"
 
-tasks.withType(Sign) {
-    onlyIf { project.hasProperty("signing.keyId") && project.hasProperty("signing.password") }
-}
+            from components.java
+            // javadocJar and sourcesJar are added by java.withJavadocJar() and java.withSourcesJar() above.
+            // See: https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/JavaPluginExtension.html
 
-signing {
-    sign configurations.archives
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            if (project.hasProperty("mavenCentral")) {
-                beforeDeployment {
-                    MavenDeployment deployment -> signing.signPom(deployment)
-                }
-
-                if (!(project.hasProperty("sonatype.userName") && project.hasProperty("sonatype.password"))) {
-                    throw new GradleException("Set sonatype.userName and sonatype.password to upload to Maven Central.")
-                }
-
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: project.getProperty("sonatype.userName"),
-                                   password: project.getProperty("sonatype.password"))
-                }
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: project.getProperty("sonatype.userName"),
-                                   password: project.getProperty("sonatype.password"))
-                }
-            } else {
-                if (project.hasProperty("signing.keyId") && project.hasProperty("signing.password")) {
-                    beforeDeployment {
-                        MavenDeployment deployment -> signing.signPom(deployment)
-                    }
-                } else {
-                    logger.warn('No OpenPGP key pair is configured.')
-                }
-
-                repository(url: "file:${project.buildDir}/mavenLocal")
-                snapshotRepository(url: "file:${project.buildDir}/mavenLocalSnapshot")
-            }
-
-            pom.project {
-                artifactId "${project.name}"
-                groupId "${project.group}"
-
+            pom {  // https://central.sonatype.org/pages/requirements.html
                 packaging "jar"
 
-                name "${project.name}"
-                description "${project.description}"
-                url "https://github.com/embulk/embulk-util-timestamp"
-
-                scm {
-                    url "https://github.com/embulk/embulk-util-timestamp"
-                    connection "scm:git:git://github.com/embulk/embulk-util-timestamp.git"
-                    developerConnection "scm:git:git@github.com:embulk/embulk-util-timestamp.git"
-                }
-
-                issueManagement {
-                    url "https://github.com/embulk/embulk-util-timestamp/issues"
-                }
+                name = "${project.name}"
+                description = "${project.description}"
+                url = "https://www.embulk.org/"
 
                 licenses {
                     license {
                         // http://central.sonatype.org/pages/requirements.html#license-information
-                        name "The Apache License, Version 2.0"
-                        url "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        name = "The Apache License, Version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                     }
                 }
 
                 developers {
                     developer {
-                        id "dmikurube"
-                        name "Dai MIKURUBE"
-                        email "dmikurube@treasure-data.com"
+                        id = "dmikurube"
+                        name = "Dai MIKURUBE"
+                        email = "dmikurube@treasure-data.com"
                     }
+                }
+
+                scm {
+                    connection = "scm:git:git://github.com/embulk/embulk-util-timestamp.git"
+                    developerConnection = "scm:git:git@github.com:embulk/embulk-util-timestamp.git"
+                    url = "https://github.com/embulk/embulk-util-timestamp"
                 }
             }
         }
     }
+
+    repositories {
+        maven {  // publishMavenPublicationToMavenCentralRepository
+            name = "mavenCentral"
+            if (project.version.endsWith("-SNAPSHOT")) {
+                url "https://oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            }
+
+            credentials {
+                username = project.hasProperty("ossrhUsername") ? ossrhUsername : ""
+                password = project.hasProperty("ossrhPassword") ? ossrhPassword : ""
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.maven
 }
