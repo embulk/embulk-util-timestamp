@@ -1,6 +1,7 @@
 package org.embulk.util.timestamp;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
@@ -18,6 +19,15 @@ class RubyTimestampFormatter extends TimestampFormatter {
         }
         this.pattern = pattern;
         this.defaultZoneOffset = defaultZoneOffset;
+    }
+
+    @Override
+    public final String format(final Instant instant) {
+        if (instant == null) {
+            throw new NullPointerException("instant is null.");
+        }
+
+        return this.rubyFormatter.format(instant.atOffset(this.defaultZoneOffset));
     }
 
     @Override
