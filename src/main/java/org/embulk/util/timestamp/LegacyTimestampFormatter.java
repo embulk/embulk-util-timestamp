@@ -39,9 +39,13 @@ class LegacyTimestampFormatter extends TimestampFormatter {
         }
 
         if (this.normalizedDefaultZoneId instanceof ZoneOffset) {
-            return this.rubyFormatter.format(instant.atOffset((ZoneOffset) this.normalizedDefaultZoneId));
+            return this.rubyFormatter.formatWithZoneNameStyle(
+                    instant.atOffset((ZoneOffset) this.normalizedDefaultZoneId),
+                    RubyDateTimeFormatter.ZoneNameStyle.SHORT);
         }
-        return this.rubyFormatter.format(instant.atZone(this.defaultZoneId));
+        return this.rubyFormatter.formatWithZoneNameStyle(
+                instant.atZone(this.defaultZoneId),
+                RubyDateTimeFormatter.ZoneNameStyle.SHORT);
     }
 
     @Override
