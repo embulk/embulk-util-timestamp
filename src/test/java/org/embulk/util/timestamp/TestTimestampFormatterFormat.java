@@ -549,6 +549,32 @@ public class TestTimestampFormatterFormat {
         assertFormat("366", "java:DDD", OffsetDateTime.of(2017, 1, 1, 1, 0, 0, 0, ZoneOffset.UTC).toInstant(), "-05:00");
     }
 
+    @Test
+    public void test_time_zones() {
+        assertFormat("2017-02-28T11:00:45 JST", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 2, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "Asia/Tokyo");
+        assertFormat("2017-02-27T18:00:45 PST", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 2, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "America/Los_Angeles");
+        assertFormat("2017-08-27T19:00:45 pdt", "%Y-%m-%dT%H:%M:%S %#Z",
+                     OffsetDateTime.of(2017, 8, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "America/Los_Angeles");
+        assertFormat("2017-08-28T02:00:45 UTC", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 8, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "UTC");
+
+        assertFormat("2017-02-28T02:00:45 GMT", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 2, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "Europe/London");
+        assertFormat("2017-08-28T03:00:45 BST", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 8, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "Europe/London");
+        assertFormat("2017-02-28T09:00:45 ICT", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 2, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "Asia/Ho_Chi_Minh");
+
+        assertFormat("2017-08-28T11:00:45 +09:00", "%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 8, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "+09:00");
+        assertFormat("2017-02-27T17:00:45 -09:00", "ruby:%Y-%m-%dT%H:%M:%S %Z",
+                     OffsetDateTime.of(2017, 2, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "-09:00");
+        assertFormat("Mon Feb 27 19:00:45 2017 -07:00", "java:EEE MMM dd HH:mm:ss uuuu XXXXX",
+                     OffsetDateTime.of(2017, 2, 28, 2, 0, 45, 0, ZoneOffset.UTC).toInstant(), "-07:00");
+    }
+
     private static void assertFormat(final String expected, final String format, final Instant instant, final String zone) {
         final TimestampFormatter formatter =
                 TimestampFormatter.builder(format, true).setDefaultZoneFromString(zone).build();
