@@ -27,7 +27,9 @@ class RubyTimestampFormatter extends TimestampFormatter {
             throw new NullPointerException("instant is null.");
         }
 
-        return this.rubyFormatter.format(instant.atOffset(this.defaultZoneOffset));
+        return this.rubyFormatter.formatWithZoneNameStyle(
+                instant.atOffset(this.defaultZoneOffset),
+                RubyDateTimeFormatter.ZoneNameStyle.SHORT);
     }
 
     @Override
