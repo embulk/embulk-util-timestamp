@@ -10,7 +10,7 @@ repositories {
 }
 
 group = "org.embulk"
-version = "0.2.2-SNAPSHOT"
+version = "0.2.2"
 description "Timestamp parser and formatter for Embulk and Embulk plugins"
 
 configurations {
