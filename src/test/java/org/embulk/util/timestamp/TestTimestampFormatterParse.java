@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
@@ -1087,6 +1088,44 @@ public class TestTimestampFormatterParse {
                      OffsetDateTime.of(2100, 2, 28, 20, 0, 0, 0, ZoneOffset.UTC).toInstant());
     }
 
+    @Test
+    public void testDefaultOffsetsWithParsingZones() {
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S%Z", ZoneId.of("Asia/Tokyo")).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S%z", ZoneId.of("Asia/Tokyo")).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S%:z", ZoneId.of("Asia/Tokyo")).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S%::z", ZoneId.of("Asia/Tokyo")).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S%:::z", ZoneId.of("Asia/Tokyo")).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S %Z", ZoneId.of("Europe/Paris")).parse("2000-03-01T05:00:00 UTC"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createZoneIdFormatter("%Y-%m-%dT%H:%M:%S %Z", ZoneId.of("Europe/Paris")).parse("2000-03-01T05:00:00 JST"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.ofHours(9)).toInstant());
+    }
+
+    @Test
+    public void testRubyDefaultOffsetsWithParsingZones() {
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S%Z", ZoneOffset.ofHours(9)).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S%z", ZoneOffset.ofHours(9)).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S%:z", ZoneOffset.ofHours(9)).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S%::z", ZoneOffset.ofHours(9)).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S%:::z", ZoneOffset.ofHours(9)).parse("2000-03-01T05:00:00Z"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S %Z", ZoneOffset.ofHours(2)).parse("2000-03-01T05:00:00 UTC"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.UTC).toInstant());
+        assertEquals(createOffsetFormatter("ruby:%Y-%m-%dT%H:%M:%S %Z", ZoneOffset.ofHours(2)).parse("2000-03-01T05:00:00 +09:00"),
+                     OffsetDateTime.of(2000, 3, 1, 5, 0, 0, 0, ZoneOffset.ofHours(9)).toInstant());
+    }
+
     private void testJavaToParse(final String string, final String format, final long second, final int nanoOfSecond) {
         final TimestampFormatter formatter = TimestampFormatter.builderWithJava(format).build();
         final Instant timestamp = formatter.parse(string);
@@ -1176,6 +1215,13 @@ public class TestTimestampFormatterParse {
         return TimestampFormatter
                        .builder(format, true)
                        .setDefaultZoneOffset(offset)
+                       .build();
+    }
+
+    private static TimestampFormatter createZoneIdFormatter(final String format, final ZoneId zone) {
+        return TimestampFormatter
+                       .builder(format, true)
+                       .setDefaultZoneId(zone)
                        .build();
     }
 }
