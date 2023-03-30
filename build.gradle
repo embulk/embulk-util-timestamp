@@ -35,10 +35,10 @@ java {
 
 dependencies {
     // Dependencies should be "api" so that their scope would be "compile" in "pom.xml".
-    api "org.embulk:embulk-util-rubytime:0.3.2"
+    api "org.embulk:embulk-util-rubytime:0.3.3"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.1"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.2"
 
     javadocOnly "joda-time:joda-time:2.10.2"
 }
