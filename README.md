@@ -1,10 +1,10 @@
-Embulk Utilities for Timestamps
-================================
+Timestamp parser and formatter for Embulk and Embulk plugins
+=============================================================
 
 For Embulk plugin developers
 -----------------------------
 
-* [Javadoc](https://dev.embulk.org/embulk-util-csv/)
+* [Javadoc](https://dev.embulk.org/embulk-util-timestamp/)
 
 For Maintainers
 ----------------
