@@ -19,9 +19,9 @@ package org.embulk.util.timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.Period;
-import java.time.ZonedDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
@@ -169,9 +169,9 @@ final class LegacyRubyTimeResolver extends RubyDateTimeResolver {
             final Period parsedExcessDays = original.query(DateTimeFormatter.parsedExcessDays());
             if (parsedExcessDays == null || parsedExcessDays.isZero()) {
                 excessDays = 0;
-            } else if (parsedExcessDays.getDays() == 1 &&
-                       parsedExcessDays.getMonths() == 0 &&
-                       parsedExcessDays.getYears() == 0) {
+            } else if (parsedExcessDays.getDays() == 1
+                       && parsedExcessDays.getMonths() == 0
+                       && parsedExcessDays.getYears() == 0) {
                 excessDays = 1;
             } else {
                 throw new DateTimeParseException("Hour is not in the range of 0-24.", "", 0);
