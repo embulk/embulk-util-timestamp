@@ -51,7 +51,6 @@ javadoc {
         classpath += configurations.javadocOnly
         locale = "en_US"
         encoding = "UTF-8"
-        overview = "src/main/html/overview.html"
         links "https://docs.oracle.com/javase/8/docs/api/"
         links "https://www.joda.org/joda-time/apidocs/"
     }
