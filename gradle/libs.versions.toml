@@ -1,6 +1,6 @@
 [versions]
 
-embulk-util-rubytime = "0.3.3"
+embulk-util-rubytime = "0.4.0"
 
 joda-time = "2.10.2"
 
