@@ -25,7 +25,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -800,7 +799,7 @@ public class TestTimestampFormatterParse {
         assertParsedTime("-31556889832780799", "%s", Instant.ofEpochSecond(-31556889832780799L, 0));
         assertParsedTime("-31556889832780800", "%s", Instant.ofEpochSecond(-31556889832780800L, 0));  // Sure
 
-        assertParsedTime( "-31556889864403199", "%s", Instant.ofEpochSecond(-31556889864403199L, 0));
+        assertParsedTime("-31556889864403199", "%s", Instant.ofEpochSecond(-31556889864403199L, 0));
         assertFailToParse("-31556889864403200", "%s");  // To succeed? -(Instant.MAX + 1)
         assertFailToParse("-31557014135596799", "%s");  // To succeed? -999999999-01-01T00:00:00
         assertFailToParse("-31557014167219200", "%s");  // To succeed? Instant.MIN.
@@ -831,7 +830,7 @@ public class TestTimestampFormatterParse {
         assertParsedTime("-31556889832780799", "ruby:%s", Instant.ofEpochSecond(-31556889832780799L, 0));
         assertParsedTime("-31556889832780800", "ruby:%s", Instant.ofEpochSecond(-31556889832780800L, 0));  // Sure
 
-        assertParsedTime( "-31556889864403199", "ruby:%s", Instant.ofEpochSecond(-31556889864403199L, 0));
+        assertParsedTime("-31556889864403199", "ruby:%s", Instant.ofEpochSecond(-31556889864403199L, 0));
         assertFailToParse("-31556889864403200", "ruby:%s");  // To succeed? -(Instant.MAX + 1)
         assertFailToParse("-31557014135596799", "ruby:%s");  // To succeed? -999999999-01-01T00:00:00
         assertFailToParse("-31557014167219200", "ruby:%s");  // To succeed? Instant.MIN.
@@ -1130,7 +1129,7 @@ public class TestTimestampFormatterParse {
         final TimestampFormatter formatter = TimestampFormatter.builderWithJava(format).build();
         final Instant timestamp = formatter.parse(string);
         assertEquals(second, timestamp.getEpochSecond());
-        assertEquals(nanoOfSecond,timestamp.getNano());
+        assertEquals(nanoOfSecond, timestamp.getNano());
     }
 
     private void testJavaToParse(final String string, final String format, final long second) {
@@ -1153,7 +1152,7 @@ public class TestTimestampFormatterParse {
         final TimestampFormatter formatter = TimestampFormatter.builderWithRuby(format).build();
         final Instant timestamp = formatter.parse(string);
         assertEquals(second, timestamp.getEpochSecond());
-        assertEquals(nanoOfSecond,timestamp.getNano());
+        assertEquals(nanoOfSecond, timestamp.getNano());
     }
 
     private void testRubyToParse(final String string, final String format, final long second) {
@@ -1175,7 +1174,7 @@ public class TestTimestampFormatterParse {
         final TimestampFormatter formatter = TimestampFormatter.builder(format, true).setDefaultDate(4567, 1, 23).build();
         final Instant timestamp = formatter.parse(string);
         assertEquals(second, timestamp.getEpochSecond());
-        assertEquals(nanoOfSecond,timestamp.getNano());
+        assertEquals(nanoOfSecond, timestamp.getNano());
     }
 
     private void testToParse(final String string, final String format, final long second) {

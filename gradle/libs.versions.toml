@@ -6,6 +6,8 @@ joda-time = "2.10.2"
 
 junit5 = "5.9.2"
 
+checkstyle = "9.3"
+
 [libraries]
 
 embulk-util-rubytime = { group = "org.embulk", name = "embulk-util-rubytime", version.ref = "embulk-util-rubytime" }
