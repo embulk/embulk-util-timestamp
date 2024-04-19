@@ -2,7 +2,7 @@
 
 embulk-util-rubytime = "0.3.3"
 
-joda-time = "2.10.2"
+joda-time = "2.12.7"
 
 junit5 = "5.10.2"
 
