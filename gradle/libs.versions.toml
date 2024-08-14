@@ -4,7 +4,7 @@ embulk-util-rubytime = "0.4.0"
 
 joda-time = "2.12.7"
 
-junit5 = "5.10.3"
+junit5 = "5.11.0"
 
 checkstyle = "9.3"
 
