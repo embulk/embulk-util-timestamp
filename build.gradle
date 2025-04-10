@@ -4,6 +4,7 @@ plugins {
     id "maven-publish"
     id "signing"
     id "checkstyle"
+    id("org.jreleaser") version "1.17.0"
 }
 
 repositories {
@@ -11,7 +12,7 @@ repositories {
 }
 
 group = "org.embulk"
-version = "0.3.0-SNAPSHOT"
+version = "0.3.1-SNAPSHOT"
 description "Timestamp parser and formatter for Embulk and Embulk plugins"
 
 configurations {
@@ -136,19 +137,13 @@ publishing {
         }
     }
 
+    // We release this to Maven Central with JReleaser tentatively because there is no first-party Gradle plugin yet.
+    // https://central.sonatype.org/news/20250326_ossrh_sunset/#support-for-gradle-and-other-publishers
+    //
+    // Once the first-part Gradle plugin for the new Maven Central Portal is available, we will get back to the first-party.
     repositories {
-        maven {  // publishMavenPublicationToMavenCentralRepository
-            name = "mavenCentral"
-            if (project.version.endsWith("-SNAPSHOT")) {
-                url "https://oss.sonatype.org/content/repositories/snapshots"
-            } else {
-                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            }
-
-            credentials {
-                username = project.hasProperty("ossrhUsername") ? ossrhUsername : ""
-                password = project.hasProperty("ossrhPassword") ? ossrhPassword : ""
-            }
+        maven {  // https://jreleaser.org/guide/latest/examples/maven/staging-artifacts.html#_gradle
+             url = layout.buildDirectory.dir("jreleaser-staging-deploy")
         }
     }
 }
@@ -158,8 +153,53 @@ signing {
         logger.lifecycle("Signing with an in-memory key.")
         useInMemoryPgpKeys(signingKey, signingPassword)
     }
-    sign publishing.publications.maven
+    // Disabled: Signed directly by JReleaser when being released by JReleaser.
+    // sign publishing.publications.maven
 }
+
+jreleaser {
+    release {
+        github {
+            enabled = true  // Not intended, but needed: https://github.com/jreleaser/jreleaser/discussions/1725
+            token = "unavailable"
+            skipTag = true
+            skipRelease = true
+        }
+    }
+
+    signing {  // https://jreleaser.org/guide/latest/reference/signing.html
+        active = org.jreleaser.model.Active.ALWAYS
+        armored = true
+        mode = org.jreleaser.model.Signing.Mode.MEMORY
+        publicKey = System.getenv("JRELEASER_GPG_PUBLIC_KEY") ?: "N/A"
+        secretKey = System.getenv("JRELEASER_GPG_SECRET_KEY") ?: "N/A"
+        passphrase = System.getenv("JRELEASER_GPG_PASSPHRASE") ?: "N/A"
+    }
+
+    deploy {
+        maven {
+            mavenCentral {  // https://jreleaser.org/guide/latest/reference/deploy/maven/maven-central.html
+                sonatype {
+                    active = org.jreleaser.model.Active.ALWAYS
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    snapshotSupported = false
+                    username = System.getenv("JRELEASER_MAVENCENTRAL_USERNAME")
+                    password = System.getenv("JRELEASER_MAVENCENTRAL_PASSWORD")
+                    authorization = "BEARER"
+                    applyMavenCentralRules = true
+                    stagingRepository("$buildDir/jreleaser-staging-deploy")
+                    retryDelay = 60
+                    maxRetries = 60
+                }
+            }
+        }
+    }
+}
+
+jreleaserRelease.dependsOn publish
+jreleaserRelease.shouldRunAfter publish
+jreleaserUpload.dependsOn publish
+jreleaserUpload.shouldRunAfter publish
 
 test {
     useJUnitPlatform()
